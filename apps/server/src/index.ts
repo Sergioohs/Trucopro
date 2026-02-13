@@ -69,6 +69,20 @@ app.post('/admin/hidden/ban/:nickname', async (req, res) => {
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
+ codex/opa-56d81w
+const turnTimers = new Map<string, { turn: number; deadline: number }>();
+
+function refreshTurnTimer(roomId: string) {
+  const room = matchmaking.rooms.get(roomId);
+  if (!room?.match || room.match.over) return;
+  const prev = turnTimers.get(roomId);
+  if (!prev || prev.turn !== room.match.currentTurn) {
+    turnTimers.set(roomId, { turn: room.match.currentTurn, deadline: Date.now() + config.turnTimerSec * 1000 });
+  }
+}
+
+=======
+ main
 function roomSnapshot(roomId: string) {
   const room = matchmaking.rooms.get(roomId);
   if (!room) return null;
@@ -96,7 +110,29 @@ function roomSnapshot(roomId: string) {
 }
 
 function emitRoom(roomId: string) {
+ codex/opa-56d81w
+  const base = roomSnapshot(roomId);
+  if (!base) return;
+  const room = matchmaking.rooms.get(roomId);
+  if (!room?.match) {
+    io.to(roomId).emit('room:update', base);
+    refreshTurnTimer(roomId);
+    return;
+  }
+
+  refreshTurnTimer(roomId);
+
+  room.match.seats.forEach((seat) => {
+    const socketId = room.seats.find((s) => s?.userId === seat.userId)?.socketId;
+    if (!socketId) return;
+    io.to(socketId).emit('room:update', {
+      ...base,
+      selfHand: seat.hand
+    });
+  });
+=======
   io.to(roomId).emit('room:update', roomSnapshot(roomId));
+ main
 }
 
 setInterval(() => {
@@ -119,6 +155,32 @@ setInterval(() => {
   });
 }, 5000);
 
+ codex/opa-56d81w
+
+setInterval(() => {
+  const now = Date.now();
+  turnTimers.forEach((timer, roomId) => {
+    const room = matchmaking.rooms.get(roomId);
+    if (!room?.match || room.match.over) return;
+    if (now < timer.deadline) return;
+
+    const seat = room.match.seats[timer.turn];
+    const fallbackCard = seat.hand[0];
+    if (!fallbackCard) return;
+
+    try {
+      playCard(room.match, timer.turn, fallbackCard);
+      io.to(roomId).emit('chat:quick', { from: 'Sistema', message: `${seat.nickname} ficou AFK e jogou automático.` });
+      emitRoom(roomId);
+      if (room.match.over) finalizeMatch(roomId);
+    } catch {
+      // noop: state may have advanced concurrently
+    }
+  });
+}, 1000);
+
+=======
+ main
 io.on('connection', (socket) => {
   let auth: { uid: string; nickname: string } | null = null;
 
@@ -156,6 +218,20 @@ io.on('connection', (socket) => {
     if (!auth) return cb({ ok: false });
     const room = Array.from(matchmaking.rooms.values()).find((r) => r.code === code.toUpperCase());
     if (!room) return cb({ ok: false, error: 'Sala não encontrada' });
+ codex/opa-56d81w
+
+    const existingSeat = room.seats.find((s) => s?.userId === auth.uid);
+    if (existingSeat) {
+      existingSeat.socketId = socket.id;
+      existingSeat.connected = true;
+      room.lastSeen[auth.uid] = Date.now();
+      socket.join(room.id);
+      emitRoom(room.id);
+      return cb({ ok: true, roomId: room.id, reconnected: true });
+    }
+
+=======
+ main
     const user = await UserModel.findById(auth.uid);
     const idx = room.seats.findIndex((s) => !s);
     if (idx < 0 || !user) return cb({ ok: false, error: 'Sala cheia' });
@@ -291,6 +367,10 @@ async function finalizeMatch(roomId: string) {
   });
 
   io.to(roomId).emit('match:over', { winnerTeam, score: room.match.score });
+ codex/opa-56d81w
+  turnTimers.delete(roomId);
+=======
+ main
 }
 
 async function bootstrap() {
