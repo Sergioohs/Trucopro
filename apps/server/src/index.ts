@@ -69,7 +69,9 @@ app.post('/admin/hidden/ban/:nickname', async (req, res) => {
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
- codex/opa-56d81w
+
+=======
+ main
 const turnTimers = new Map<string, { turn: number; deadline: number }>();
 
 function refreshTurnTimer(roomId: string) {
@@ -82,6 +84,8 @@ function refreshTurnTimer(roomId: string) {
 }
 
 =======
+=======
+ main
  main
 function roomSnapshot(roomId: string) {
   const room = matchmaking.rooms.get(roomId);
@@ -110,7 +114,9 @@ function roomSnapshot(roomId: string) {
 }
 
 function emitRoom(roomId: string) {
+=======
  codex/opa-56d81w
+ main
   const base = roomSnapshot(roomId);
   if (!base) return;
   const room = matchmaking.rooms.get(roomId);
@@ -131,7 +137,9 @@ function emitRoom(roomId: string) {
     });
   });
 =======
+=======
   io.to(roomId).emit('room:update', roomSnapshot(roomId));
+ main
  main
 }
 
@@ -155,7 +163,8 @@ setInterval(() => {
   });
 }, 5000);
 
- codex/opa-56d81w
+=======
+ main
 
 setInterval(() => {
   const now = Date.now();
@@ -180,6 +189,8 @@ setInterval(() => {
 }, 1000);
 
 =======
+=======
+ main
  main
 io.on('connection', (socket) => {
   let auth: { uid: string; nickname: string } | null = null;
@@ -218,7 +229,9 @@ io.on('connection', (socket) => {
     if (!auth) return cb({ ok: false });
     const room = Array.from(matchmaking.rooms.values()).find((r) => r.code === code.toUpperCase());
     if (!room) return cb({ ok: false, error: 'Sala não encontrada' });
+=======
  codex/opa-56d81w
+ main
 
     const existingSeat = room.seats.find((s) => s?.userId === auth.uid);
     if (existingSeat) {
@@ -231,6 +244,8 @@ io.on('connection', (socket) => {
     }
 
 =======
+=======
+ main
  main
     const user = await UserModel.findById(auth.uid);
     const idx = room.seats.findIndex((s) => !s);
@@ -367,9 +382,12 @@ async function finalizeMatch(roomId: string) {
   });
 
   io.to(roomId).emit('match:over', { winnerTeam, score: room.match.score });
+  turnTimers.delete(roomId);
+=======
  codex/opa-56d81w
   turnTimers.delete(roomId);
 =======
+ main
  main
 }
 

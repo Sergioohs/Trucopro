@@ -6,11 +6,11 @@
     "packages/*"
   ],
   "scripts": {
- codex/opa-56d81w
     "dev": "bash -lc 'npm run dev --workspace @trucopro/server & npm run dev --workspace @trucopro/web & wait'",
     "build": "npm run build --workspaces",
     "lint": "npm run lint --workspaces",
     "typecheck": "npm run typecheck --workspaces"
+=======
 =======
     "dev": "concurrently \"npm run dev --workspace @trucopro/server\" \"npm run dev --workspace @trucopro/web\"",
     "build": "npm run build --workspaces",
@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "concurrently": "^9.0.1"
+ main
  main
   }
 }
