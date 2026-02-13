@@ -1,0 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body { @apply bg-emerald-950 text-emerald-50; }
+.card-enter { transition: all .3s ease; }
