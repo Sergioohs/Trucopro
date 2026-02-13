@@ -1,0 +1,14 @@
+{
+  "name": "trucopro",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bash -lc 'npm run dev --workspace @trucopro/server & npm run dev --workspace @trucopro/web & wait'",
+    "build": "npm run build --workspaces",
+    "lint": "npm run lint --workspaces",
+    "typecheck": "npm run typecheck --workspaces"
+  }
+}
