@@ -16,12 +16,19 @@ type Profile = {
 export default function HomePage() {
   const [nickname, setNickname] = useState('');
   const [pin, setPin] = useState('');
+ codex/opa-56d81w
+=======
+  const [token, setToken] = useState('');
+ main
   const [profile, setProfile] = useState<Profile | null>(null);
   const [queue, setQueue] = useState<{ queued: boolean; estimateSec?: number }>({ queued: false });
   const [room, setRoom] = useState<any>(null);
   const [ranking, setRanking] = useState<any[]>([]);
   const [chat, setChat] = useState<Array<{ from: string; message: string }>>([]);
+ codex/opa-56d81w
   const [inviteCode, setInviteCode] = useState('');
+=======
+ main
 
   const roomId = room?.id;
   const mySeat = useMemo(() => room?.seats?.find((s: any) => s?.userId === profile?.id), [room, profile]);
@@ -34,6 +41,10 @@ export default function HomePage() {
     });
     const data = await res.json();
     if (!res.ok) return alert(data.error);
+ codex/opa-56d81w
+=======
+    setToken(data.token);
+ main
     setProfile(data.profile);
     socket.connect();
     socket.emit('auth', data.token, (r: any) => r.ok || alert('Falha auth socket'));
@@ -42,12 +53,15 @@ export default function HomePage() {
   function quickPlay() { socket.emit('queue:join'); }
   function cancelQueue() { socket.emit('queue:cancel'); }
   function createPrivate() { socket.emit('room:createPrivate'); }
+ codex/opa-56d81w
   function joinByCode() {
     if (!inviteCode.trim()) return;
     socket.emit('room:joinCode', inviteCode.trim().toUpperCase(), (r: any) => {
       if (!r.ok) alert(r.error || 'Não foi possível entrar na sala');
     });
   }
+=======
+ main
 
   useEffect(() => {
     socket.on('queue:status', setQueue);
@@ -96,15 +110,22 @@ export default function HomePage() {
         <p>{profile.avatar} {profile.nickname}</p>
         <p>MMR: {Math.round(profile.mmr)}</p>
         <p>W/L: {profile.wins}/{profile.losses} ({Math.round(profile.winrate * 100)}%)</p>
+ codex/opa-56d81w
         <div className="mt-3 flex flex-wrap gap-2">
+=======
+        <div className="mt-3 flex gap-2">
+ main
           <button className="rounded bg-lime-500 px-3 py-2 font-semibold text-black" onClick={quickPlay}>Jogar Agora</button>
           <button className="rounded bg-zinc-300 px-3 py-2 text-black" onClick={cancelQueue}>Cancelar</button>
           <button className="rounded bg-cyan-400 px-3 py-2 text-black" onClick={createPrivate}>Sala privada</button>
         </div>
+ codex/opa-56d81w
         <div className="mt-2 flex gap-2">
           <input className="w-36 rounded p-2 text-black" placeholder="Código da sala" value={inviteCode} onChange={(e) => setInviteCode(e.target.value)} />
           <button className="rounded bg-sky-300 px-3 py-2 text-black" onClick={joinByCode}>Entrar por código</button>
         </div>
+=======
+ main
         <p className="mt-2 text-sm">Fila: {queue.queued ? `buscando (ETA ${queue.estimateSec}s)` : 'fora da fila'}</p>
       </section>
 
@@ -145,7 +166,11 @@ export default function HomePage() {
                 </div>
                 {mySeat && (
                   <div className="mt-2 flex gap-2">
+ codex/opa-56d81w
                     {(room.selfHand || []).map((c: any, i: number) => (
+=======
+                    {[{ rank: 'A', suit: 'spades' }, { rank: 'K', suit: 'hearts' }, { rank: '3', suit: 'diamonds' }].map((c, i) => (
+ main
                       <button key={i} className="card-enter rounded bg-white px-3 py-2 font-semibold text-black" onClick={() => socket.emit('game:play', { roomId: room.id, card: c })}>{c.rank} {c.suit}</button>
                     ))}
                   </div>

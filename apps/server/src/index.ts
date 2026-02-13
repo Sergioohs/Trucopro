@@ -69,6 +69,7 @@ app.post('/admin/hidden/ban/:nickname', async (req, res) => {
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
+ codex/opa-56d81w
 const turnTimers = new Map<string, { turn: number; deadline: number }>();
 
 function refreshTurnTimer(roomId: string) {
@@ -80,6 +81,8 @@ function refreshTurnTimer(roomId: string) {
   }
 }
 
+=======
+ main
 function roomSnapshot(roomId: string) {
   const room = matchmaking.rooms.get(roomId);
   if (!room) return null;
@@ -107,6 +110,7 @@ function roomSnapshot(roomId: string) {
 }
 
 function emitRoom(roomId: string) {
+ codex/opa-56d81w
   const base = roomSnapshot(roomId);
   if (!base) return;
   const room = matchmaking.rooms.get(roomId);
@@ -126,6 +130,9 @@ function emitRoom(roomId: string) {
       selfHand: seat.hand
     });
   });
+=======
+  io.to(roomId).emit('room:update', roomSnapshot(roomId));
+ main
 }
 
 setInterval(() => {
@@ -148,6 +155,7 @@ setInterval(() => {
   });
 }, 5000);
 
+ codex/opa-56d81w
 
 setInterval(() => {
   const now = Date.now();
@@ -171,6 +179,8 @@ setInterval(() => {
   });
 }, 1000);
 
+=======
+ main
 io.on('connection', (socket) => {
   let auth: { uid: string; nickname: string } | null = null;
 
@@ -208,6 +218,7 @@ io.on('connection', (socket) => {
     if (!auth) return cb({ ok: false });
     const room = Array.from(matchmaking.rooms.values()).find((r) => r.code === code.toUpperCase());
     if (!room) return cb({ ok: false, error: 'Sala não encontrada' });
+ codex/opa-56d81w
 
     const existingSeat = room.seats.find((s) => s?.userId === auth.uid);
     if (existingSeat) {
@@ -219,6 +230,8 @@ io.on('connection', (socket) => {
       return cb({ ok: true, roomId: room.id, reconnected: true });
     }
 
+=======
+ main
     const user = await UserModel.findById(auth.uid);
     const idx = room.seats.findIndex((s) => !s);
     if (idx < 0 || !user) return cb({ ok: false, error: 'Sala cheia' });
@@ -354,7 +367,10 @@ async function finalizeMatch(roomId: string) {
   });
 
   io.to(roomId).emit('match:over', { winnerTeam, score: room.match.score });
+ codex/opa-56d81w
   turnTimers.delete(roomId);
+=======
+ main
 }
 
 async function bootstrap() {
